@@ -1,0 +1,10 @@
+version: "3.7"
+services:
+  notifier:
+    container_name: my-notifier
+    image: notifications:1.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+#    volumes:
+#      - "./my-notifications.yml:/etc/notifications/config.yaml"

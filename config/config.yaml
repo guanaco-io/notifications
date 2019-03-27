@@ -1,0 +1,4 @@
+alerta:
+  endpoint: http://localhost:8282/api
+  webui: http://localhost:8282
+  reload_interval: 60
