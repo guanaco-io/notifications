@@ -24,6 +24,11 @@ func main() {
 		log.Fatalf("Error initializing program: %v", initError)
 	}
 
+	channels, channelsError := LoadChannels(config)
+	if channelsError != nil {
+		log.Fatalf("Error loading channels configuration: %v", channelsError)
+	}
+
 	client := AlertaClient{config: config.Alerta}
 
 	ticker := time.NewTicker(config.Alerta.ReloadInterval * time.Second)
@@ -47,8 +52,12 @@ func main() {
 						for _, ruleChannel := range rule.Channels {
 							log.Printf("Sending %v alerts to channel %v of rule %v", ruleChannel, ruleName)
 
-							// lookup channel
-							// channel.send
+							channel, ok := channels[ruleChannel]
+							if !ok {
+								log.Fatalf("Unable to find channel '%v' of rule '%v' in channel config", ruleChannel, ruleName)
+							}
+
+							channel.Send(notNotified)
 						}
 
 					}
@@ -61,11 +70,6 @@ func main() {
 
 
 			}
-
-			/*
-			openAlerts := client.countOpenAlerts()
-			log.Printf("Fetched %v open alerts from Alerta at %v\n", openAlerts, t)
-			*/
 		}
 	}()
 

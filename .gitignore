@@ -19,3 +19,5 @@
 .classpath
 .settings
 *.jnilib
+
+notifications

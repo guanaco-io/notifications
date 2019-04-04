@@ -73,33 +73,6 @@ func (client *AlertaClient) searchAlerts(rule Rule) []Alert {
 	return alertsResponse.Alerts
 }
 
-func (client *AlertaClient) countOpenAlerts() int {
-	url := fmt.Sprintf("%v/alerts", client.config.Endpoint)
-	resp, err := performRequest("GET", url, nil)
-
-	if err != nil {
-		log.Printf("Error fetching alert count: %v", err)
-		return 0
-	}
-
-	log.Printf("Response: %s", resp.Status)
-
-	decoder := json.NewDecoder(resp.Body)
-
-	var alertsResponse AlertsResponse
-	if err := decoder.Decode(&alertsResponse); err != nil {
-		log.Print(err)
-		log.Printf("Error parsing alerts response: %v", err)
-		return 0
-	}
-
-	closeError := resp.Body.Close()
-	if closeError != nil {
-		log.Fatalf("Error closing response body: %v", closeError)
-	}
-
-	return len(alertsResponse.Alerts)
-}
 
 func performRequest(method string, url string, body []byte) (resp *http.Response, err error) {
 	log.Printf("Doing %s request to %s with body: %s", method, url, body)
@@ -110,6 +83,9 @@ func performRequest(method string, url string, body []byte) (resp *http.Response
 	}
 
 	req, err := http.NewRequest(method, url, bodyReader)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	return client.Do(req)

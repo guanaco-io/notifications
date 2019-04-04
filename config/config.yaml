@@ -18,13 +18,13 @@ channels:
   marketing:
     type: mail
     config:
-      smtp_to: user@example.com
+      to: user@example.com
       template: marketing.j2
 
   mail_support:
     type: mail
     config:
-      smtp_to: user@example.com
+      to: user@example.com
 
   slack_support:
     type: slack

@@ -10,23 +10,23 @@ import (
 type Config struct {
 	DryRun bool
 
-	Alerta Alerta `yaml:"alerta"`
-	ChannelSettings ChannelSettings `yaml:"channel_settings"`
-	Channels map[string]Channel `yaml:"channels"`
-	Rules map[string]Rule `yaml:"rules"`
+	Alerta Alerta                     `yaml:"alerta"`
+	ChannelSettings ChannelSettings   `yaml:"channel_settings"`
+	Channels map[string]ChannelConfig `yaml:"channels"`
+	Rules map[string]Rule             `yaml:"rules"`
 }
 
 type Alerta struct {
 
-	Endpoint string `yaml:"endpoint"`
-	Webui string `yaml:"webui"`
+	Endpoint string              `yaml:"endpoint"`
+	Webui string                 `yaml:"webui"`
 	ReloadInterval time.Duration `yaml:"reload_interval"`
 }
 
 type ChannelSettings struct {
 
 	Slack Slack `yaml:"slack"`
-	Smtp Smtp `yaml:"smtp"`
+	Smtp  Smtp  `yaml:"smtp"`
 }
 
 type Slack struct {
@@ -36,22 +36,22 @@ type Slack struct {
 
 type Smtp struct {
 
-	Server string `yaml:"server"`
-	User string `yaml:"user"`
+	Server string   `yaml:"server"`
+	User string     `yaml:"user"`
 	Password string `yaml:"password"`
-	From string `yaml:"from"`
-	Ssl bool `yaml:"ssl"`
+	From string     `yaml:"from"`
+	Ssl bool `       yaml:"ssl"`
 }
 
-type Channel struct {
+type ChannelConfig struct {
 
-	Type string `yaml:"type"`
+	Type string              `yaml:"type"`
 	Config map[string]string `yaml:"config"`
 }
 
 type Rule struct {
 
-	Filter string `yaml:"filter"`
+	Filter string     `yaml:"filter"`
 	Channels []string `yaml:"channels"`
 }
 
