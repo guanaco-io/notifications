@@ -3,7 +3,7 @@
 FROM golang
 
 # Copy the local package files to the container's workspace.
-ADD .. /go/src/github.com/guanaco-io/notifications
+ADD . /go/src/github.com/guanaco-io/notifications
 
 # Build the outyet command inside the container.
 # (You may fetch or manage dependencies here,
@@ -11,7 +11,5 @@ ADD .. /go/src/github.com/guanaco-io/notifications
 RUN go get github.com/guanaco-io/notifications
 RUN go install github.com/guanaco-io/notifications
 
-COPY ../config/config.yaml /etc/notifications/config.yaml
-
 # Run the outyet command by default when the container starts.
-ENTRYPOINT /go/bin/github.com/guanaco-io/notifications /etc/notifications/config.yaml
+# ENTRYPOINT /go/bin/notifications /etc/notifications/config.yml

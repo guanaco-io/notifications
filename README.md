@@ -15,4 +15,16 @@ go build
 
 ### Build an image
 
-### Run Compose file
+docker build -t "guanaco/notifications:0.0.1" .
+
+### Run Compose file or run container
+```bash
+cd docker
+docker-compose up
+```
+or
+```bash
+docker run -td guanaco/notifications:0.0.1
+```
+
+
