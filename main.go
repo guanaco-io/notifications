@@ -60,7 +60,7 @@ func main() {
 								log.Fatalf("Unable to find channel '%v' of rule '%v' in channel config", ruleChannel, ruleName)
 							}
 
-							sendError := channel.Send(AlertEvent{NewAlertCount:nrOfAlerts, NewAlerts:notNotified, AlreadyNotified: len(alreadyNotified)})
+							sendError := channel.Send(AlertEvent{NewAlertCount: nrOfAlerts, NewAlerts: notNotified, AlreadyNotified: len(alreadyNotified)})
 							if sendError != nil {
 								log.Printf("Error sending alert event to channel '%v' of rule '%v': %v", ruleChannel, ruleName, sendError)
 							}
@@ -80,7 +80,7 @@ func main() {
 
 	time.Sleep(maxDuration) // TODO find a better way to block here
 	ticker.Stop()
-	log.Println("Ticker stopped")
+	log.Println("Ticker stopped, exiting program")
 
 	os.Exit(0)
 }

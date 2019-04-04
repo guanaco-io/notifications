@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/nlopes/slack"
 	"gopkg.in/gomail.v2"
 	"html/template"
 	"log"
@@ -15,12 +16,14 @@ type Channel interface {
 }
 
 type MailChannel struct {
+	Alerta   Alerta
 	settings Smtp
 	To       []string
 	Template string
 }
 
 type SlackChannel struct {
+	Alerta   Alerta
 	settings Slack
 	Channel  string
 }
@@ -82,12 +85,6 @@ func (mail MailChannel) Send(event AlertEvent) error {
 	return d.DialAndSend(m)
 }
 
-func (slack SlackChannel) Send(event AlertEvent) error {
-	log.Printf("Slacking %v alerts", event.NewAlertCount)
-
-	return nil
-}
-
 func render(filename string, event AlertEvent) string {
 
 	var result bytes.Buffer
@@ -102,11 +99,66 @@ func render(filename string, event AlertEvent) string {
 	return result.String()
 }
 
+func (slackChannel SlackChannel) Send(event AlertEvent) error {
+	log.Printf("Slacking %v alerts", event.NewAlertCount)
+
+	msg := toWebhookMessage(event, slackChannel)
+
+	return slack.PostWebhook(slackChannel.settings.WebhookUrl, &msg)
+}
+
+func toWebhookMessage(event AlertEvent, slackChannel SlackChannel) slack.WebhookMessage {
+
+	var attachments = make([]slack.Attachment, event.NewAlertCount)
+
+	for index, alert := range event.NewAlerts {
+
+		attachments[index] = slack.Attachment{
+			Color: color(alert.Severity),
+			AuthorName: "Alerta Notifications",
+			AuthorLink: slackChannel.Alerta.Webui,
+
+			Text: fmt.Sprintf("*<%v|%v>* - `%v`\n%v", alert.Url, alert.Event, alert.Resource, alert.Text),
+
+			Fields: []slack.AttachmentField{
+				slack.AttachmentField{
+					Title: "Severity",
+					Value: alert.Severity,
+					Short: true,
+				},
+				slack.AttachmentField{
+					Title: "Environment",
+					Value: alert.Environment,
+					Short: true,
+				},
+			},
+		}
+	}
+	msg := slack.WebhookMessage{
+		IconEmoji:   ":rocket:",
+		Text:        fmt.Sprintf(subject(event.NewAlertCount)),
+		Channel:     slackChannel.Channel,
+		Attachments: attachments,
+	}
+	return msg
+}
+
 func subject(count int) string {
 	if count > 1 {
 		return fmt.Sprintf("%v new alerts", count)
 	}
 	return fmt.Sprintf("%v new alert", count)
+}
+
+func color(severity string) string {
+	switch severity {
+	case "warning":
+		return "danger"
+	case "minor":
+		return "warning"
+	default:
+		return "danger"
+	}
 }
 
 func getOrElse(attempt string, fallback string) string {

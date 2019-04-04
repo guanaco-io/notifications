@@ -35,6 +35,21 @@ func TestMailTemplate(t *testing.T) {
 	log.Print(render("default_mail.gohtml", mockAlertEvent))
 }
 
+func TestSlackMarshalling(t *testing.T) {
+
+	mockAlertEvent := AlertEvent{AlreadyNotified:20, NewAlertCount:5, NewAlerts:readAlerts(t)}
+	mockChannel := SlackChannel{Channel:"test", Alerta:Alerta{Webui:"http://localhost:8282/alerta"}}
+
+	msg := toWebhookMessage(mockAlertEvent, mockChannel)
+
+	raw, err := json.Marshal(msg)
+	if err != nil {
+		t.Fatalf("cannot marshall webhook message: %v", err)
+	}
+
+	log.Print(string(raw))
+}
+
 func readAlerts(t *testing.T) []Alert {
 	var alertsResponse AlertsResponse
 

@@ -17,8 +17,8 @@ func TestReadFromYamlConfig(t *testing.T) {
 
 	log.Printf("Parsed configuration: %v\n", Configuration)
 
-	if (Configuration.Alerta.ReloadInterval != 5) {
-		t.Fatalf("reload interval should equal 5")
+	if Configuration.Alerta.ReloadInterval != 60 {
+		t.Fatalf("unexpected reload interval")
 	}
 	log.Printf("interval is %v\n", Configuration.Alerta.ReloadInterval*time.Second)
 
