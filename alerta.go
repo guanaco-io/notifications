@@ -7,9 +7,14 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
 
-var config = &Configuration
+const notification_attribute_format = "notifications %s"
+
+type AlertaClient struct {
+	config Alerta
+}
 
 type Alert struct {
 	Id string `json:"id"`
@@ -17,6 +22,7 @@ type Alert struct {
 	Resource string `json:"resource"`
 	Severity string `json:"severity"`
 	Event string `json:"event"`
+	Url string `json:"href"`
 	Attributes map[string]string `json:"attributes"`
 }
 
@@ -25,8 +31,50 @@ type AlertsResponse struct {
 	StatusCounts map[string]int `json:"statusCounts"`
 }
 
-func countOpenAlerts() int {
-	url := fmt.Sprintf("%v/alerts", config.Alerta.Endpoint)
+func (alert *Alert) AlreadyNotified(ruleId string) bool {
+	_, ok := alert.Attributes[fmt.Sprintf(notification_attribute_format, ruleId)]
+	return ok
+}
+
+func (alert *Alert) Notified(ruleId string) {
+	alert.Attributes[fmt.Sprintf(notification_attribute_format, ruleId)] = time.Now().UTC().String()
+}
+
+func IsNotified(alert Alert, ruleId string) bool {
+	return alert.AlreadyNotified(ruleId)
+}
+
+func (client *AlertaClient) searchAlerts(rule Rule) []Alert {
+	var alertsResponse = AlertsResponse{}
+
+	url := fmt.Sprintf("%v/alerts?%v", client.config.Endpoint, rule.Filter)
+	resp, err := performRequest("GET", url, nil)
+
+	if err != nil {
+		log.Printf("Error fetching alert count: %v", err)
+		return alertsResponse.Alerts
+	}
+
+	log.Printf("Response: %s", resp.Status)
+
+	decoder := json.NewDecoder(resp.Body)
+
+	if err := decoder.Decode(&alertsResponse); err != nil {
+		log.Print(err)
+		log.Printf("Error parsing alerts response: %v", err)
+		return alertsResponse.Alerts
+	}
+
+	closeError := resp.Body.Close()
+	if closeError != nil {
+		log.Fatalf("Error closing response body: %v", closeError)
+	}
+
+	return alertsResponse.Alerts
+}
+
+func (client *AlertaClient) countOpenAlerts() int {
+	url := fmt.Sprintf("%v/alerts", client.config.Endpoint)
 	resp, err := performRequest("GET", url, nil)
 
 	if err != nil {

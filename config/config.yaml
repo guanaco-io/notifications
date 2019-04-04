@@ -1,4 +1,44 @@
 alerta:
-  endpoint: http://localhost:8282/api
-  webui: http://localhost:8282
-  reload_interval: 60
+  endpoint: http://localhost:8283/api
+  webui: http://localhost:8283
+  reload_interval: 5
+
+channel_settings:
+  smtp:
+    server: smtp.example.com
+    from: user@example.com
+    user: username
+    password: 'password'
+    ssl: True
+
+  slack:
+    webhook_url: 'https://hooks.slack.com/services/1/2/3'
+
+channels:
+  marketing:
+    type: mail
+    config:
+      smtp_to: user@example.com
+      template: marketing.j2
+
+  mail_support:
+    type: mail
+    config:
+      smtp_to: user@example.com
+
+  slack_support:
+    type: slack
+    config:
+      slack_channel: '#test'
+
+rules:
+  development:
+    filter: status=open&environment=Development
+    channels:
+      - slack_support
+      - mail_support
+
+  marketing:
+    filter: status=open&environment=!Development&service=yourservice
+    channels:
+      - marketing

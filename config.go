@@ -3,13 +3,18 @@ package main
 import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"log"
 	"os"
 	"time"
 )
 
-var DryRun bool
-var Configuration Config
+type Config struct {
+	DryRun bool
+
+	Alerta Alerta `yaml:"alerta"`
+	ChannelSettings ChannelSettings `yaml:"channel_settings"`
+	Channels map[string]Channel `yaml:"channels"`
+	Rules map[string]Rule `yaml:"rules"`
+}
 
 type Alerta struct {
 
@@ -18,31 +23,55 @@ type Alerta struct {
 	ReloadInterval time.Duration `yaml:"reload_interval"`
 }
 
-type Config struct {
+type ChannelSettings struct {
 
-	Alerta Alerta `yaml:"alerta"`
+	Slack Slack `yaml:"slack"`
+	Smtp Smtp `yaml:"smtp"`
 }
 
-func validate() error {
+type Slack struct {
 
-	if len(os.Args) < 2 {
-		log.Printf("Usage: notifications [--dry-run] <config.yml>")
-		log.Fatal("  <config.yml> parameter is missing!")
-	}
+	WebhookUrl string `yaml:"webhook_url"`
+}
 
-	DryRun = contains(os.Args, "--dry-run")
+type Smtp struct {
 
-	data, readFileError := ioutil.ReadFile(os.Args[1])
+	Server string `yaml:"server"`
+	User string `yaml:"user"`
+	Password string `yaml:"password"`
+	From string `yaml:"from"`
+	Ssl bool `yaml:"ssl"`
+}
+
+type Channel struct {
+
+	Type string `yaml:"type"`
+	Config map[string]string `yaml:"config"`
+}
+
+type Rule struct {
+
+	Filter string `yaml:"filter"`
+	Channels []string `yaml:"channels"`
+}
+
+func Load(filename string) (Config, error) {
+
+	var config Config
+
+	data, readFileError := ioutil.ReadFile(filename)
 	if readFileError != nil {
-		return readFileError
+		return config, readFileError
 	}
 
-	unmarshallError := yaml.Unmarshal(data, &Configuration)
+	unmarshallError := yaml.Unmarshal(data, &config)
 	if unmarshallError != nil {
-		return unmarshallError
+		return config, unmarshallError
 	}
 
-	return nil
+	config.DryRun = contains(os.Args, "--dry-run")
+
+	return config, nil
 }
 
 func contains(slice []string, lookup string) bool {
