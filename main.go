@@ -13,7 +13,7 @@ const (
 
 func main() {
 
-	fmt.Printf("Starting notifications client\n")
+	fmt.Printf("Starting notifications client")
 	if len(os.Args) < 2 {
 		log.Printf("Usage: notifications [--dry-run] <config.yml>")
 		log.Fatal("  <config.yml> parameter is missing!")
@@ -23,11 +23,14 @@ func main() {
 	if initError != nil {
 		log.Fatalf("Error initializing program: %v", initError)
 	}
+	fmt.Printf("Configuration loaded successfully")
 
 	channels, channelsError := LoadChannels(config)
 	if channelsError != nil {
 		log.Fatalf("Error loading channels configuration: %v", channelsError)
 	}
+	fmt.Printf("%v Channels loaded successfully", len(channels))
+	fmt.Printf("Waiting for %v before fetching alerts", (config.Alerta.ReloadInterval * time.Second))
 
 	client := AlertaClient{config: config.Alerta}
 
@@ -50,14 +53,17 @@ func main() {
 					if nrOfAlerts := len(notNotified); nrOfAlerts > 0 {
 
 						for _, ruleChannel := range rule.Channels {
-							log.Printf("Sending %v alerts to channel %v of rule %v", ruleChannel, ruleName)
+							log.Printf("Sending %v alerts to channel %v of rule %v", nrOfAlerts, ruleChannel, ruleName)
 
 							channel, ok := channels[ruleChannel]
 							if !ok {
 								log.Fatalf("Unable to find channel '%v' of rule '%v' in channel config", ruleChannel, ruleName)
 							}
 
-							channel.Send(notNotified)
+							sendError := channel.Send(AlertEvent{NewAlertCount:nrOfAlerts, NewAlerts:notNotified, AlreadyNotified: len(alreadyNotified)})
+							if sendError != nil {
+								log.Printf("Error sending alert event to channel '%v' of rule '%v': %v", ruleChannel, ruleName, sendError)
+							}
 						}
 
 					}
@@ -67,7 +73,6 @@ func main() {
 				} else {
 					log.Printf("No Alerts found for rule %v", ruleName)
 				}
-
 
 			}
 		}

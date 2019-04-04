@@ -1,0 +1,25 @@
+Hallo Tanja,
+
+
+Er zijn {{ .NewAlertCount }} nieuwe alerts voor de Webshop:
+
+{{if .NewAlerts -}}
+  <ul>
+    {{- range .NewAlerts }}
+      <li>
+        {{ .Severity }} - {{ .Environment }}/{{ .Resource }} - {{ .Event }} - {{ .Text }}<br/>
+        <a href="{{ .Url }}">{{ .Url }}</a>
+      </li>
+    {{- end}}
+  </ul>
+{{- else}}
+  No Alerts found
+{{- end}}
+
+There are also {{ .AlreadyNotified }} more open alerts.
+
+Er zijn ook nog {{ .AlreadyNotified }} oudere, openstaande alerts.
+
+
+Groetjes,
+-- Uw Alerta instance

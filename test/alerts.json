@@ -152,7 +152,8 @@
       "trendIndication": "noChange",
       "type": "exceptionAlert",
       "value": null
-    } ],
+    }
+  ],
   "autoRefresh": true,
   "lastTime": "2019-03-27T01:33:57.277Z",
   "more": false,

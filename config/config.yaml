@@ -1,7 +1,7 @@
 alerta:
   endpoint: http://localhost:8283/api
   webui: http://localhost:8283
-  reload_interval: 5
+  reload_interval: 60
 
 channel_settings:
   smtp:
@@ -19,12 +19,12 @@ channels:
     type: mail
     config:
       to: user@example.com
-      template: marketing.j2
+      template: marketing.gohtml
 
   mail_support:
     type: mail
     config:
-      to: user@example.com
+      to: user@example.com, user2@example.com
 
   slack_support:
     type: slack

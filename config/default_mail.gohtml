@@ -1,0 +1,23 @@
+L.S.,
+
+
+There are {{ .NewAlertCount }} new alert(s):
+
+{{if .NewAlerts -}}
+    <ul>
+    {{- range .NewAlerts }}
+        <li>
+            {{ .Severity }} - {{ .Environment }}/{{ .Resource }} - {{ .Event }} - {{ .Text }}<br/>
+            <a href="{{ .Url }}">{{ .Url }}</a>
+        </li>
+    {{- end}}
+    </ul>
+{{- else}}
+    No Alerts found
+{{- end}}
+
+There are also {{ .AlreadyNotified }} more open alerts.
+
+
+Regards,
+-- your Alerta instance

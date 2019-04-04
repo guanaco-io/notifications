@@ -20,7 +20,7 @@ func TestReadFromYamlConfig(t *testing.T) {
 	if (Configuration.Alerta.ReloadInterval != 5) {
 		t.Fatalf("reload interval should equal 5")
 	}
-	log.Printf("interval is %v\n", Configuration.Alerta.ReloadInterval * time.Second)
+	log.Printf("interval is %v\n", Configuration.Alerta.ReloadInterval*time.Second)
 
 	log.Printf("channels: %v\n", Configuration.Channels)
 	if len(Configuration.Channels) != 3 {

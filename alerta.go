@@ -17,17 +17,20 @@ type AlertaClient struct {
 }
 
 type Alert struct {
-	Id string `json:"id"`
-	Text string  `json:"text"`
-	Resource string `json:"resource"`
-	Severity string `json:"severity"`
-	Event string `json:"event"`
-	Url string `json:"href"`
-	Attributes map[string]string `json:"attributes"`
+	Id          string            `json:"id"`
+	Environment string            `json:"environment"`
+	Text        string            `json:"text"`
+	Resource    string            `json:"resource"`
+	Severity    string            `json:"severity"`
+	Event       string            `json:"event"`
+	Href        string            `json:"href"`
+	Attributes  map[string]string `json:"attributes"`
+
+	Url         string
 }
 
 type AlertsResponse struct {
-	Alerts []Alert `json:"alerts"`
+	Alerts       []Alert        `json:"alerts"`
 	StatusCounts map[string]int `json:"statusCounts"`
 }
 
@@ -51,7 +54,7 @@ func (client *AlertaClient) searchAlerts(rule Rule) []Alert {
 	resp, err := performRequest("GET", url, nil)
 
 	if err != nil {
-		log.Printf("Error fetching alert count: %v", err)
+		log.Printf("Error fetching alerts: %v", err)
 		return alertsResponse.Alerts
 	}
 
@@ -60,9 +63,12 @@ func (client *AlertaClient) searchAlerts(rule Rule) []Alert {
 	decoder := json.NewDecoder(resp.Body)
 
 	if err := decoder.Decode(&alertsResponse); err != nil {
-		log.Print(err)
-		log.Printf("Error parsing alerts response: %v", err)
+		log.Fatalf("Error parsing alerts response: %v", err)
 		return alertsResponse.Alerts
+	}
+
+	for index, alert := range alertsResponse.Alerts {
+		alertsResponse.Alerts[index].Url = fmt.Sprintf("%v/#/alert/%v", client.config.Webui, alert.Id)
 	}
 
 	closeError := resp.Body.Close()
@@ -72,7 +78,6 @@ func (client *AlertaClient) searchAlerts(rule Rule) []Alert {
 
 	return alertsResponse.Alerts
 }
-
 
 func performRequest(method string, url string, body []byte) (resp *http.Response, err error) {
 	log.Printf("Doing %s request to %s with body: %s", method, url, body)
