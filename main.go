@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -13,7 +12,7 @@ const (
 
 func main() {
 
-	fmt.Printf("Starting notifications client")
+	log.Printf("Starting notifications client")
 	if len(os.Args) < 2 {
 		log.Printf("Usage: notifications <config.yml>")
 		log.Fatal("  <config.yml> parameter is missing!")
@@ -21,24 +20,22 @@ func main() {
 
 	config, initError := Load(os.Args[1])
 	logFatal("Error initializing program", initError)
-	fmt.Printf("Configuration loaded successfully")
+	log.Printf("Configuration loaded successfully")
 
 	channels, channelsError := LoadChannels(config)
 	logFatal("Error loading channels configuration", channelsError)
-	fmt.Printf("%v Channels loaded successfully", len(channels))
+	log.Printf("%v Channels loaded successfully", len(channels))
 
 	client := AlertaClient{config: config.Alerta}
 	ticker := time.NewTicker(config.Alerta.ReloadInterval * time.Second)
 
-	fmt.Printf("Waiting for %v before fetching alerts", config.Alerta.ReloadInterval*time.Second)
+	log.Printf("Waiting for %v before fetching alerts", config.Alerta.ReloadInterval*time.Second)
 	go func() {
 		for t := range ticker.C {
 
-			log.Printf("Fetching Alerta alerts at %v", t)
-
 			for ruleName, rule := range config.Rules {
 
-				log.Printf("Evaluating rule %v", ruleName)
+				log.Printf("Evaluating rule %v (%v)", ruleName, t)
 
 				if alerts := client.searchAlerts(rule); alerts != nil && len(alerts) > 0 {
 
@@ -47,7 +44,7 @@ func main() {
 					if nrOfAlerts := len(notNotified); nrOfAlerts > 0 {
 
 						for _, ruleChannel := range rule.Channels {
-							log.Printf("Sending %v alerts to channel %v of rule %v", nrOfAlerts, ruleChannel, ruleName)
+							log.Printf("Sending %v alert(s) to channel %v of rule %v", nrOfAlerts, ruleChannel, ruleName)
 
 							channel, ok := channels[ruleChannel]
 							if !ok {
@@ -60,8 +57,14 @@ func main() {
 							}
 						}
 
+						for _, alert := range notNotified {
+							alert.Notified(ruleName)
+							updateError := client.updateAttributes(alert)
+							if updateError != nil {
+								log.Printf("Error updating alert attributes for alert '%v' and rule '%v': %v", alert, ruleName, updateError)
+							}
+						}
 					}
-
 					log.Printf("%v alerts were already notified for rule %v", len(alreadyNotified), ruleName)
 
 				} else {

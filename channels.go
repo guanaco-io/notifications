@@ -9,6 +9,7 @@ import (
 	"gopkg.in/gomail.v2"
 	"html/template"
 	"log"
+	"path"
 	"strings"
 )
 
@@ -51,7 +52,7 @@ func LoadChannels(config Config) (map[string]Channel, error) {
 			for i, t := range to {
 				to[i] = strings.TrimSpace(t)
 			}
-			templateFilename, _ := channel.Config["templateFilename"]
+			templateFilename, _ := channel.Config["template"]
 
 			channels[channelName] = MailChannel{settings: config.ChannelSettings.Smtp, To: to, Template: templateFilename}
 
@@ -70,9 +71,9 @@ func LoadChannels(config Config) (map[string]Channel, error) {
 }
 
 func (mail MailChannel) Send(event AlertEvent, dryrun bool) error {
-	log.Printf("Mailing %v alerts", event.NewAlertCount)
 
-	body := render(getOrElse(mail.Template, "default_mail.gohtml"), event)
+	mailTemplate := getOrElse(mail.Template, "templates/default_mail.gohtml")
+	body := render(mailTemplate, event)
 
 	if dryrun {
 		log.Print("-- DryRun is active: not really sending mail --")
@@ -80,6 +81,7 @@ func (mail MailChannel) Send(event AlertEvent, dryrun bool) error {
 
 		return nil
 	} else {
+		log.Printf("Sending %v alert(s) via smtp mail", event.NewAlertCount)
 
 		m := gomail.NewMessage()
 		m.SetHeader("From", mail.settings.From)
@@ -98,7 +100,8 @@ func render(filename string, event AlertEvent) string {
 
 	var result bytes.Buffer
 
-	t := template.Must(template.New(filename).ParseFiles(fmt.Sprintf("templates/%v", filename)))
+	base := path.Base(filename)
+	t := template.Must(template.New(base).ParseFiles(filename))
 
 	err := t.Execute(&result, event)
 	if err != nil {
@@ -109,7 +112,6 @@ func render(filename string, event AlertEvent) string {
 }
 
 func (slackChannel SlackChannel) Send(event AlertEvent, dryrun bool) error {
-	log.Printf("Slacking %v alerts", event.NewAlertCount)
 
 	msg := toWebhookMessage(event, slackChannel)
 
@@ -124,6 +126,7 @@ func (slackChannel SlackChannel) Send(event AlertEvent, dryrun bool) error {
 			return nil
 		}
 	} else {
+		log.Printf("Posting %v alert(s) to slack", event.NewAlertCount)
 		return slack.PostWebhook(slackChannel.settings.WebhookUrl, &msg)
 	}
 }
@@ -131,6 +134,8 @@ func (slackChannel SlackChannel) Send(event AlertEvent, dryrun bool) error {
 func toWebhookMessage(event AlertEvent, slackChannel SlackChannel) slack.WebhookMessage {
 
 	var attachments = make([]slack.Attachment, event.NewAlertCount)
+
+	// todo add time.Now() to attachment
 
 	for index, alert := range event.NewAlerts {
 

@@ -1,7 +1,7 @@
-dry_run: false
+dry_run: true
 
 alerta:
-  endpoint: http://localhost:8283/api
+  endpoint: http://host.docker.internal:8283/api
   webui: http://localhost:8283
   reload_interval: 30
 
@@ -21,12 +21,13 @@ channels:
     type: mail
     config:
       to: user@example.com
-      template: marketing.gohtml
+      template: "/etc/notifications/test.gohtml"
 
   mail_support:
     type: mail
     config:
       to: user@example.com, user2@example.com
+      template: "/etc/notifications/test.gohtml"
 
   slack_support:
     type: slack
@@ -41,6 +42,6 @@ rules:
       - mail_support
 
   marketing_test:
-    filter: status=open&environment=!Development&service=yourservice
+    filter: status=open&environment=Production&service=yourservice
     channels:
       - marketing

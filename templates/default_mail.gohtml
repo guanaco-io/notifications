@@ -4,16 +4,15 @@ L.S.,
 There are {{ .NewAlertCount }} new alert(s):
 
 {{if .NewAlerts -}}
-    <ul>
+  <ul>
     {{- range .NewAlerts }}
-        <li>
-            {{ .Severity }} - {{ .Environment }}/{{ .Resource }} - {{ .Event }} - {{ .Text }}<br/>
-            <a href="{{ .Url }}">{{ .Url }}</a>
-        </li>
+      <li>
+        {{ .Severity }} - <a href="{{ .Url }}">{{ .Environment }}/{{ .Resource }}</a>: {{ .Event }} - {{ .Text }}
+      </li>
     {{- end}}
-    </ul>
+  </ul>
 {{- else}}
-    No Alerts found
+  No Alerts found
 {{- end}}
 
 There are also {{ .AlreadyNotified }} more open alerts.

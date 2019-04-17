@@ -58,7 +58,7 @@ func (client *AlertaClient) searchAlerts(rule Rule) []Alert {
 		return alertsResponse.Alerts
 	}
 
-	log.Printf("Response: %s", resp.Status)
+	log.Printf("< %s", resp.Status)
 
 	decoder := json.NewDecoder(resp.Body)
 
@@ -79,8 +79,33 @@ func (client *AlertaClient) searchAlerts(rule Rule) []Alert {
 	return alertsResponse.Alerts
 }
 
+// http://docs.alerta.io/en/latest/api/reference.html#update-alert-attributes
+func (client *AlertaClient) updateAttributes(alert Alert) error {
+
+	url := fmt.Sprintf("%v/attributes", alert.Href)
+
+	var body = make(map[string]interface{})
+
+	body["attributes"] = alert.Attributes
+
+	jsn, marshallError := json.Marshal(body)
+	if marshallError != nil {
+		return marshallError
+	}
+
+	log.Printf("Posting attribute update to Alerta: %v", string(jsn))
+
+	_, err := performRequest("PUT", url, jsn)
+
+	return err
+
+}
+
 func performRequest(method string, url string, body []byte) (resp *http.Response, err error) {
-	log.Printf("Doing %s request to %s with body: %s", method, url, body)
+	log.Printf("> [%s] %s", method, url)
+	if body != nil {
+		log.Printf("> %s", body)
+	}
 
 	var bodyReader io.Reader
 	if body != nil {

@@ -32,7 +32,7 @@ func TestMailTemplate(t *testing.T) {
 
 	mockAlertEvent := AlertEvent{AlreadyNotified: 20, NewAlertCount: 5, NewAlerts: readAlerts(t)}
 
-	log.Print(render("default_mail.gohtml", mockAlertEvent))
+	log.Print(render("templates/default_mail.gohtml", mockAlertEvent))
 }
 
 func TestSlackMarshalling(t *testing.T) {
