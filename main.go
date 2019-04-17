@@ -15,26 +15,23 @@ func main() {
 
 	fmt.Printf("Starting notifications client")
 	if len(os.Args) < 2 {
-		log.Printf("Usage: notifications [--dry-run] <config.yml>")
+		log.Printf("Usage: notifications <config.yml>")
 		log.Fatal("  <config.yml> parameter is missing!")
 	}
 
 	config, initError := Load(os.Args[1])
-	if initError != nil {
-		log.Fatalf("Error initializing program: %v", initError)
-	}
+	logFatal("Error initializing program", initError)
 	fmt.Printf("Configuration loaded successfully")
 
 	channels, channelsError := LoadChannels(config)
-	if channelsError != nil {
-		log.Fatalf("Error loading channels configuration: %v", channelsError)
-	}
+	logFatal("Error loading channels configuration", channelsError)
 	fmt.Printf("%v Channels loaded successfully", len(channels))
-	fmt.Printf("Waiting for %v before fetching alerts", (config.Alerta.ReloadInterval * time.Second))
+
 
 	client := AlertaClient{config: config.Alerta}
-
 	ticker := time.NewTicker(config.Alerta.ReloadInterval * time.Second)
+
+	fmt.Printf("Waiting for %v before fetching alerts", config.Alerta.ReloadInterval * time.Second)
 	go func() {
 		for t := range ticker.C {
 
@@ -44,9 +41,7 @@ func main() {
 
 				log.Printf("Evaluating rule %v", ruleName)
 
-				alerts := client.searchAlerts(rule)
-
-				if alerts != nil && len(alerts) > 0 {
+				if alerts := client.searchAlerts(rule); alerts != nil && len(alerts) > 0 {
 
 					alreadyNotified, notNotified := Partition(alerts, ruleName, IsNotified)
 
@@ -60,7 +55,7 @@ func main() {
 								log.Fatalf("Unable to find channel '%v' of rule '%v' in channel config", ruleChannel, ruleName)
 							}
 
-							sendError := channel.Send(AlertEvent{NewAlertCount: nrOfAlerts, NewAlerts: notNotified, AlreadyNotified: len(alreadyNotified)})
+							sendError := channel.Send(AlertEvent{NewAlertCount: nrOfAlerts, NewAlerts: notNotified, AlreadyNotified: len(alreadyNotified)}, config.DryRun)
 							if sendError != nil {
 								log.Printf("Error sending alert event to channel '%v' of rule '%v': %v", ruleChannel, ruleName, sendError)
 							}
@@ -96,4 +91,11 @@ func Partition(all []Alert, ruleId string, predicate func(Alert, string) bool) (
 		}
 	}
 	return success, failure
+}
+
+// Log error message and exit program
+func logFatal(msg string, err error) {
+	if err != nil {
+		log.Fatalf("%v: %v", msg, err)
+	}
 }

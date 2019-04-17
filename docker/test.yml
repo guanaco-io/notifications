@@ -1,3 +1,5 @@
+dry_run: false
+
 alerta:
   endpoint: http://localhost:8283/api
   webui: http://localhost:8283

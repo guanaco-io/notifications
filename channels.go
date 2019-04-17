@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/nlopes/slack"
@@ -12,7 +13,7 @@ import (
 )
 
 type Channel interface {
-	Send(event AlertEvent) error
+	Send(event AlertEvent, dryrun bool) error
 }
 
 type MailChannel struct {
@@ -68,28 +69,36 @@ func LoadChannels(config Config) (map[string]Channel, error) {
 	return channels, nil
 }
 
-func (mail MailChannel) Send(event AlertEvent) error {
+func (mail MailChannel) Send(event AlertEvent, dryrun bool) error {
 	log.Printf("Mailing %v alerts", event.NewAlertCount)
 
 	body := render(getOrElse(mail.Template, "default_mail.gohtml"), event)
 
-	m := gomail.NewMessage()
-	m.SetHeader("From", mail.settings.From)
-	m.SetHeader("To", mail.To...)
-	m.SetHeader("Subject", subject(event.NewAlertCount))
-	m.SetBody("text/html", body)
+	if dryrun {
+		log.Print("-- DryRun is active: not really sending mail --")
+		log.Printf("Generated mail from %v to %v [%v] \n%v", mail.settings.From, mail.To, subject(event.NewAlertCount), body)
 
-	d := gomail.NewDialer(mail.settings.Server, mail.settings.Port(), mail.settings.User, mail.settings.Password)
-	d.SSL = mail.settings.Ssl
+		return nil
+	} else {
 
-	return d.DialAndSend(m)
+		m := gomail.NewMessage()
+		m.SetHeader("From", mail.settings.From)
+		m.SetHeader("To", mail.To...)
+		m.SetHeader("Subject", subject(event.NewAlertCount))
+		m.SetBody("text/html", body)
+
+		d := gomail.NewDialer(mail.settings.Server, mail.settings.Port(), mail.settings.User, mail.settings.Password)
+		d.SSL = mail.settings.Ssl
+
+		return d.DialAndSend(m)
+	}
 }
 
 func render(filename string, event AlertEvent) string {
 
 	var result bytes.Buffer
 
-	t := template.Must(template.New(filename).ParseFiles(fmt.Sprintf("config/%v", filename)))
+	t := template.Must(template.New(filename).ParseFiles(fmt.Sprintf("templates/%v", filename)))
 
 	err := t.Execute(&result, event)
 	if err != nil {
@@ -99,12 +108,24 @@ func render(filename string, event AlertEvent) string {
 	return result.String()
 }
 
-func (slackChannel SlackChannel) Send(event AlertEvent) error {
+func (slackChannel SlackChannel) Send(event AlertEvent, dryrun bool) error {
 	log.Printf("Slacking %v alerts", event.NewAlertCount)
 
 	msg := toWebhookMessage(event, slackChannel)
 
-	return slack.PostWebhook(slackChannel.settings.WebhookUrl, &msg)
+	if dryrun {
+		log.Print("-- DryRun is active: not really posting to slack --")
+
+		if raw, err := json.Marshal(msg); err != nil {
+			log.Printf("Error marshalling slack message to json: %v", err)
+			return err
+		} else {
+			log.Printf("Posting slack message:\n%v", string(raw))
+			return nil
+		}
+	} else {
+		return slack.PostWebhook(slackChannel.settings.WebhookUrl, &msg)
+	}
 }
 
 func toWebhookMessage(event AlertEvent, slackChannel SlackChannel) slack.WebhookMessage {

@@ -13,16 +13,20 @@ func TestReadFromYamlConfig(t *testing.T) {
 	if configError != nil {
 		t.Fatalf("cannot unmarshal data: %v", configError)
 	}
-	log.Println(Configuration)
-
 	log.Printf("Parsed configuration: %v\n", Configuration)
+
+
+	if Configuration.DryRun != true {
+		t.Fatalf("unexpected dry_run configuration value")
+	}
+	log.Printf("dryrun is %v", Configuration.DryRun)
 
 	if Configuration.Alerta.ReloadInterval != 60 {
 		t.Fatalf("unexpected reload interval")
 	}
-	log.Printf("interval is %v\n", Configuration.Alerta.ReloadInterval*time.Second)
+	log.Printf("interval is %v", Configuration.Alerta.ReloadInterval*time.Second)
 
-	log.Printf("channels: %v\n", Configuration.Channels)
+	log.Printf("channels: %v", Configuration.Channels)
 	if len(Configuration.Channels) != 3 {
 		t.Fatalf("expected 3 channels")
 	}
@@ -30,7 +34,7 @@ func TestReadFromYamlConfig(t *testing.T) {
 		log.Printf("channel[%v]: type '%v', config %v", name, channel.Type, channel.Config)
 	}
 
-	log.Printf("rules: %v\n", Configuration.Rules)
+	log.Printf("rules: %v", Configuration.Rules)
 	if len(Configuration.Rules) != 2 {
 		t.Fatalf("expected 2 rules")
 	}

@@ -3,12 +3,11 @@ package main
 import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"os"
 	"time"
 )
 
 type Config struct {
-	DryRun bool
+	DryRun          bool                     `yaml:"dry_run"`
 
 	Alerta          Alerta                   `yaml:"alerta"`
 	ChannelSettings ChannelSettings          `yaml:"channel_settings"`
@@ -63,18 +62,7 @@ func Load(filename string) (Config, error) {
 		return config, unmarshallError
 	}
 
-	config.DryRun = contains(os.Args, "--dry-run")
-
 	return config, nil
-}
-
-func contains(slice []string, lookup string) bool {
-	for _, element := range slice {
-		if element == lookup {
-			return true
-		}
-	}
-	return false
 }
 
 func (smtp Smtp) Port() int {
