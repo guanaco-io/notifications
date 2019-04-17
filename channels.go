@@ -10,7 +10,9 @@ import (
 	"html/template"
 	"log"
 	"path"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type Channel interface {
@@ -141,10 +143,13 @@ func toWebhookMessage(event AlertEvent, slackChannel SlackChannel) slack.Webhook
 
 		attachments[index] = slack.Attachment{
 			Color:      color(alert.Severity),
-			AuthorName: "Alerta Notifications",
-			AuthorLink: slackChannel.Alerta.Webui,
+			//AuthorName: "Alerta Notifications",
+			//AuthorLink: slackChannel.Alerta.Webui,
 
-			Text: fmt.Sprintf("*<%v|%v>* - `%v`\n%v", alert.Url, alert.Event, alert.Resource, alert.Text),
+			Text: fmt.Sprintf("*`%v`* - <%v|%v> \n%v", alert.Event, alert.Url, alert.Resource, alert.Text),
+
+			Footer: "Alerta Notifications",
+			Ts: json.Number(strconv.FormatInt(time.Now().Unix(), 10)),
 
 			Fields: []slack.AttachmentField{
 				slack.AttachmentField{

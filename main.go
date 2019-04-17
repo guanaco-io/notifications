@@ -12,7 +12,7 @@ const (
 
 func main() {
 
-	log.Printf("Starting notifications client")
+	log.Printf("Starting Guanaco notifications app")
 	if len(os.Args) < 2 {
 		log.Printf("Usage: notifications <config.yml>")
 		log.Fatal("  <config.yml> parameter is missing!")
