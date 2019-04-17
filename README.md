@@ -16,7 +16,7 @@ go build
 
 ### Build an image
 ```bash
-docker build -t "guanaco/notifications:0.0.1" .
+docker build -t "guanacoio/notifications:latest" .
 ```
 
 ### Run Compose file or run container
@@ -26,7 +26,7 @@ docker-compose up
 ```
 or
 ```bash
-docker run -td guanaco/notifications:0.0.1
+docker run -td guanacoio/notifications:latest
 ```
 
 

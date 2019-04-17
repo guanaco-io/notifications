@@ -59,7 +59,7 @@ func main() {
 
 						for _, alert := range notNotified {
 							alert.Notified(ruleName)
-							updateError := client.updateAttributes(alert)
+							updateError := client.updateAttributes(alert, config.DryRun)
 							if updateError != nil {
 								log.Printf("Error updating alert attributes for alert '%v' and rule '%v': %v", alert, ruleName, updateError)
 							}

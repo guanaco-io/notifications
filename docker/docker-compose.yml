@@ -2,7 +2,7 @@ version: "3.7"
 services:
   notifier:
     container_name: test-notifier
-    image: guanaco/notifications:0.0.1
+    image: guanacoio/notifications:latest
     entrypoint: /go/bin/notifications /etc/notifications/config.yml
     volumes:
       - "./test.yml:/etc/notifications/config.yml"

@@ -80,12 +80,11 @@ func (client *AlertaClient) searchAlerts(rule Rule) []Alert {
 }
 
 // http://docs.alerta.io/en/latest/api/reference.html#update-alert-attributes
-func (client *AlertaClient) updateAttributes(alert Alert) error {
+func (client *AlertaClient) updateAttributes(alert Alert, dryrun bool) error {
 
-	url := fmt.Sprintf("%v/attributes", alert.Href)
+	url := fmt.Sprintf("%v/alert/%v/attributes", client.config.Endpoint, alert.Id)
 
 	var body = make(map[string]interface{})
-
 	body["attributes"] = alert.Attributes
 
 	jsn, marshallError := json.Marshal(body)
@@ -93,12 +92,20 @@ func (client *AlertaClient) updateAttributes(alert Alert) error {
 		return marshallError
 	}
 
-	log.Printf("Posting attribute update to Alerta: %v", string(jsn))
+	if dryrun {
+		log.Print("-- DryRun is active: not really updating alert attributes --")
+		log.Printf("Generated attribute update request for Alerta API: [%v] \n%v", url, string(jsn))
 
-	_, err := performRequest("PUT", url, jsn)
+		return nil
+	} else {
+		log.Printf("Posting attribute update to Alerta")
 
-	return err
-
+		response, err := performRequest("PUT", url, jsn)
+		if err == nil {
+			log.Printf("< %v", response.Status)
+		}
+		return err
+	}
 }
 
 func performRequest(method string, url string, body []byte) (resp *http.Response, err error) {
