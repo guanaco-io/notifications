@@ -27,11 +27,10 @@ func main() {
 	logFatal("Error loading channels configuration", channelsError)
 	fmt.Printf("%v Channels loaded successfully", len(channels))
 
-
 	client := AlertaClient{config: config.Alerta}
 	ticker := time.NewTicker(config.Alerta.ReloadInterval * time.Second)
 
-	fmt.Printf("Waiting for %v before fetching alerts", config.Alerta.ReloadInterval * time.Second)
+	fmt.Printf("Waiting for %v before fetching alerts", config.Alerta.ReloadInterval*time.Second)
 	go func() {
 		for t := range ticker.C {
 

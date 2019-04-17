@@ -26,7 +26,7 @@ type Alert struct {
 	Href        string            `json:"href"`
 	Attributes  map[string]string `json:"attributes"`
 
-	Url         string
+	Url string
 }
 
 type AlertsResponse struct {

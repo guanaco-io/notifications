@@ -135,7 +135,7 @@ func toWebhookMessage(event AlertEvent, slackChannel SlackChannel) slack.Webhook
 	for index, alert := range event.NewAlerts {
 
 		attachments[index] = slack.Attachment{
-			Color: color(alert.Severity),
+			Color:      color(alert.Severity),
 			AuthorName: "Alerta Notifications",
 			AuthorLink: slackChannel.Alerta.Webui,
 

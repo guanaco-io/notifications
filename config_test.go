@@ -8,13 +8,12 @@ import (
 
 func TestReadFromYamlConfig(t *testing.T) {
 
-	Configuration, configError := Load("config/config.yaml")
+	Configuration, configError := Load("config/config.yml")
 
 	if configError != nil {
 		t.Fatalf("cannot unmarshal data: %v", configError)
 	}
 	log.Printf("Parsed configuration: %v\n", Configuration)
-
 
 	if Configuration.DryRun != true {
 		t.Fatalf("unexpected dry_run configuration value")

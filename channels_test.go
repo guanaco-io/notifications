@@ -10,7 +10,7 @@ import (
 
 func TestLoadChannelsConfig(t *testing.T) {
 
-	Configuration, configError := Load("config/config.yaml")
+	Configuration, configError := Load("config/config.yml")
 	if configError != nil {
 		t.Fatalf("cannot unmarshal data: %v", configError)
 	}
@@ -30,15 +30,15 @@ func TestLoadChannelsConfig(t *testing.T) {
 
 func TestMailTemplate(t *testing.T) {
 
-	mockAlertEvent := AlertEvent{AlreadyNotified:20, NewAlertCount:5, NewAlerts:readAlerts(t)}
+	mockAlertEvent := AlertEvent{AlreadyNotified: 20, NewAlertCount: 5, NewAlerts: readAlerts(t)}
 
 	log.Print(render("default_mail.gohtml", mockAlertEvent))
 }
 
 func TestSlackMarshalling(t *testing.T) {
 
-	mockAlertEvent := AlertEvent{AlreadyNotified:20, NewAlertCount:5, NewAlerts:readAlerts(t)}
-	mockChannel := SlackChannel{Channel:"test", Alerta:Alerta{Webui:"http://localhost:8282/alerta"}}
+	mockAlertEvent := AlertEvent{AlreadyNotified: 20, NewAlertCount: 5, NewAlerts: readAlerts(t)}
+	mockChannel := SlackChannel{Channel: "test", Alerta: Alerta{Webui: "http://localhost:8282/alerta"}}
 
 	msg := toWebhookMessage(mockAlertEvent, mockChannel)
 

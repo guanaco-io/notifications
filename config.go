@@ -7,7 +7,7 @@ import (
 )
 
 type Config struct {
-	DryRun          bool                     `yaml:"dry_run"`
+	DryRun bool `yaml:"dry_run"`
 
 	Alerta          Alerta                   `yaml:"alerta"`
 	ChannelSettings ChannelSettings          `yaml:"channel_settings"`
