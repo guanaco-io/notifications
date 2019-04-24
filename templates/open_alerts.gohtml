@@ -1,0 +1,52 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>{{ .Subject }}</title>
+</head>
+<body>
+<table cellspacing="0" cellpadding="0" border="0" width="100%">
+    <tr>
+        <td bgcolor="#FFFFFF" align="center">
+            <table cellspacing="0" cellpadding="3" class="container" width="100%">
+                <tr><td>L.S.,</td></tr>
+                <tr><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td></tr>
+                <tr><td>There are {{ .NewAlertCount }} new alert(s):</td></tr>
+                <tr><td>&nbsp;</td></tr>
+                {{if .NewAlerts -}}
+                    <tr>
+                        <td>
+                            <ul>
+                                {{- range .NewAlerts }}
+                                    <li>
+                                        <span style="color: {{ .Color }}">[{{ .Severity }}]</span> <a href="{{ .Url }}">{{ .Environment }}/{{ .Resource }}</a>: {{ .Event }} - {{ .Text }}
+                                    </li>
+                                {{- end}}
+                            </ul>
+                        </td>
+                    </tr>
+                {{- else}}
+                    <tr><td>No Alerts found</td></tr>
+                {{- end}}
+                <tr><td>&nbsp;</td></tr>
+                <tr><td>There are also {{ .AlreadyNotified }} more open alerts.</td></tr>
+                <tr><td>&nbsp;</td></tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#FFFFFF" align="center">
+            <table cellspacing="0" cellpadding="3" class="container" width="100%">
+                <tr>
+                    <td>
+                        <hr>
+                        <p>Regards,</p>
+                        <p>-- your Alerta instance</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

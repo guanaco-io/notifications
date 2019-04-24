@@ -28,19 +28,26 @@ func TestLoadChannelsConfig(t *testing.T) {
 	}
 }
 
-func TestMailTemplate(t *testing.T) {
+func TestMailTemplateOpenAlerts(t *testing.T) {
 
-	mockAlertEvent := AlertEvent{AlreadyNotified: 20, NewAlertCount: 5, NewAlerts: readAlerts(t)}
+	mockAlertEvent := OpenAlertsEvent{AlreadyNotified: 20, NewAlertCount: 5, NewAlerts: readAlerts(t)}
 
-	log.Print(render("templates/default_mail.gohtml", mockAlertEvent))
+	log.Print(render("templates/open_alerts.gohtml", mockAlertEvent))
+}
+
+func TestMailTemplateClosedAlerts(t *testing.T) {
+
+	mockAlertEvent := ClosedAlertsEvent{Alerts: readAlerts(t)}
+
+	log.Print(render("templates/closed_alerts.gohtml", mockAlertEvent))
 }
 
 func TestSlackMarshalling(t *testing.T) {
 
-	mockAlertEvent := AlertEvent{AlreadyNotified: 20, NewAlertCount: 5, NewAlerts: readAlerts(t)}
+	mockAlertEvent := OpenAlertsEvent{AlreadyNotified: 20, NewAlertCount: 5, NewAlerts: readAlerts(t)}
 	mockChannel := SlackChannel{Channel: "test", Alerta: Alerta{Webui: "http://localhost:8282/alerta"}}
 
-	msg := toWebhookMessage(mockAlertEvent, mockChannel)
+	msg := mockAlertEvent.toWebhookMessage(mockChannel)
 
 	raw, err := json.Marshal(msg)
 	if err != nil {

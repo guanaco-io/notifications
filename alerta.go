@@ -43,6 +43,21 @@ func (alert *Alert) Notified(ruleId string) {
 	alert.Attributes[fmt.Sprintf(notification_attribute_format, ruleId)] = time.Now().UTC().String()
 }
 
+func (alert *Alert) Color() string {
+	switch alert.Severity {
+	case "warning":
+		return "#17a2b8"
+	case "minor":
+		return "#ffc107"
+	case "major":
+		return "#dc3545"
+	case "critical":
+		return "#dc3545"
+	default:
+		return "#343a40"
+	}
+}
+
 func IsNotified(alert Alert, ruleId string) bool {
 	return alert.AlreadyNotified(ruleId)
 }
