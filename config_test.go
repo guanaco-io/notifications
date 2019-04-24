@@ -31,6 +31,11 @@ func TestReadFromYamlConfig(t *testing.T) {
 	}
 	for name, channel := range Configuration.Channels {
 		log.Printf("channel[%v]: type '%v', config %v", name, channel.Type, channel.Config)
+
+		if channel.Type == "mail" {
+			log.Printf("channel[%v].template_open: '%v'", name, channel.Config["template_open"])
+			log.Printf("channel[%v].template_closed: '%v'", name, channel.Config["template_closed"])
+		}
 	}
 
 	log.Printf("rules: %v", Configuration.Rules)

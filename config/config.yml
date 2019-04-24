@@ -21,7 +21,8 @@ channels:
     type: mail
     config:
       to: user@example.com
-      template: marketing.gohtml
+      template_open: marketing.gohtml
+      template_closed: closed_alerts.gohtml
 
   mail_support:
     type: mail

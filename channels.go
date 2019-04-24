@@ -24,7 +24,8 @@ type MailChannel struct {
 	Alerta   Alerta
 	settings Smtp
 	To       []string
-	Template string
+	TemplateOpen string
+	TemplateClosed string
 }
 
 type SlackChannel struct {
@@ -59,9 +60,10 @@ func LoadChannels(config Config) (map[string]Channel, error) {
 			for i, t := range to {
 				to[i] = strings.TrimSpace(t)
 			}
-			templateFilename, _ := channel.Config["template"]
+			templateAlertsOpenedFilename, _ := channel.Config["template_open"]
+			templateAlertsClosedFilename, _ := channel.Config["template_closed"]
 
-			channels[channelName] = MailChannel{settings: config.ChannelSettings.Smtp, To: to, Template: templateFilename}
+			channels[channelName] = MailChannel{settings: config.ChannelSettings.Smtp, To: to, TemplateOpen: templateAlertsOpenedFilename, TemplateClosed:templateAlertsClosedFilename}
 
 		case "slack":
 			slackChannel, ok := channel.Config["slack_channel"]
@@ -79,7 +81,7 @@ func LoadChannels(config Config) (map[string]Channel, error) {
 
 func (mail MailChannel) SendOpenAlerts(event OpenAlertsEvent, dryrun bool) error {
 
-	mailTemplate := getOrElse(mail.Template, "templates/open_alerts.gohtml")
+	mailTemplate := getOrElse(mail.TemplateOpen, "templates/open_alerts.gohtml")
 	body := render(mailTemplate, event)
 
 	return mail.send(event.Subject(), body, dryrun)
@@ -87,7 +89,7 @@ func (mail MailChannel) SendOpenAlerts(event OpenAlertsEvent, dryrun bool) error
 
 func (mail MailChannel) SendClosedAlerts(event ClosedAlertsEvent, dryrun bool) error {
 
-	mailTemplate := getOrElse(mail.Template, "templates/closed_alerts.gohtml")
+	mailTemplate := getOrElse(mail.TemplateClosed, "templates/closed_alerts.gohtml")
 	body := render(mailTemplate, event)
 
 	return mail.send(event.Subject(), body, dryrun)
