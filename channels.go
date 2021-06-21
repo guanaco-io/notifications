@@ -5,8 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/nlopes/slack"
-	"gopkg.in/gomail.v2"
+	"github.com/slack-go/slack"
 	"html/template"
 	"log"
 	"path"
@@ -84,7 +83,7 @@ func (mail MailChannel) SendOpenAlerts(event OpenAlertsEvent, dryrun bool) error
 	mailTemplate := getOrElse(mail.TemplateOpen, "templates/open_alerts.gohtml")
 	body := render(mailTemplate, event)
 
-	return mail.send(event.Subject(), body, dryrun)
+	return mail.Send(event.Subject(), body, dryrun)
 }
 
 func (mail MailChannel) SendClosedAlerts(event ClosedAlertsEvent, dryrun bool) error {
@@ -92,30 +91,7 @@ func (mail MailChannel) SendClosedAlerts(event ClosedAlertsEvent, dryrun bool) e
 	mailTemplate := getOrElse(mail.TemplateClosed, "templates/closed_alerts.gohtml")
 	body := render(mailTemplate, event)
 
-	return mail.send(event.Subject(), body, dryrun)
-}
-
-func (mail MailChannel) send(subject string, body string, dryrun bool) error {
-
-	if dryrun {
-		log.Print("-- DryRun is active: not really sending mail --")
-		log.Printf("Generated mail from %v to %v [%v] \n%v", mail.settings.From, mail.To, subject, body)
-
-		return nil
-	} else {
-		log.Printf("Sending smtp mail: %v", subject)
-
-		m := gomail.NewMessage()
-		m.SetHeader("From", mail.settings.From)
-		m.SetHeader("To", mail.To...)
-		m.SetHeader("Subject", subject)
-		m.SetBody("text/html", body)
-
-		d := gomail.NewDialer(mail.settings.Server, mail.settings.Port(), mail.settings.User, mail.settings.Password)
-		d.SSL = mail.settings.Ssl
-
-		return d.DialAndSend(m)
-	}
+	return mail.Send(event.Subject(), body, dryrun)
 }
 
 func render(filename string, event interface{}) string {
@@ -229,7 +205,7 @@ func (event OpenAlertsEvent) Subject() string {
 	if event.NewAlertCount > 1 {
 		return fmt.Sprintf("%v new alerts", event.NewAlertCount)
 	}
-	return fmt.Sprintf("%v new alert", event.NewAlertCount)
+	return fmt.Sprintf("%v new alert: %s", event.NewAlertCount, event.NewAlerts[0].Resource)
 }
 
 func (event ClosedAlertsEvent) Subject() string {

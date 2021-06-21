@@ -31,11 +31,14 @@ type Slack struct {
 }
 
 type Smtp struct {
-	Server   string `yaml:"server"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	From     string `yaml:"from"`
-	Ssl      bool   `yaml:"ssl"`
+	Server    string `yaml:"server"`
+	Port      int    `yaml:"port"` // 465 for ssl, 587 for non-ssl
+	User      string `yaml:"user"`
+	Password  string `yaml:"password"`
+	From      string `yaml:"from"`
+	FromName  string `yaml:"from_name"`
+	Anonymous bool   `yaml:"anonymous"`
+	Ssl       bool   `yaml:"ssl"`
 }
 
 type ChannelConfig struct {
@@ -63,12 +66,4 @@ func Load(filename string) (Config, error) {
 	}
 
 	return config, nil
-}
-
-func (smtp Smtp) Port() int {
-	if smtp.Ssl {
-		return 465
-	} else {
-		return 587
-	}
 }

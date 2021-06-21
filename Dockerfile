@@ -1,15 +1,11 @@
-# Start from a Debian image with the latest version of Go installed
-# and a workspace (GOPATH) configured at /go.
-FROM golang
+FROM golang:alpine as builder
 
-# Copy the local package files to the container's workspace.
-ADD . /go/src/github.com/guanaco-io/notifications
+WORKDIR /app
 
-# Build the outyet command inside the container.
-# (You may fetch or manage dependencies here,
-# either manually or with a tool like "godep".)
-RUN go get github.com/guanaco-io/notifications
-RUN go install github.com/guanaco-io/notifications
+COPY . .
 
-# Run the outyet command by default when the container starts.
-# ENTRYPOINT /go/bin/notifications /etc/notifications/config.yml
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" .
+
+RUN mv notifications /usr/bin/
+
+ENTRYPOINT ["notifications", "/etc/notifications/config.yml"]
