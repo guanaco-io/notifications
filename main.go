@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -31,10 +32,11 @@ func main() {
 
 	log.Printf("Waiting for %v before fetching alerts", config.Alerta.ReloadInterval*time.Second)
 
-	ruleHandlers := make([]RuleHandler, len(config.Rules))
+	ruleHandlers := make([]RuleHandler, 0)
 	for ruleName, rule := range config.Rules {
-
-		ruleHandlers = append(ruleHandlers, RuleHandler{client, ruleName, rule, channels, nil, config.DryRun})
+		if strings.Trim(ruleName, " ") != "" {
+			ruleHandlers = append(ruleHandlers, RuleHandler{client, ruleName, rule, channels, nil, config.DryRun})
+		}
 	}
 
 	go func() {

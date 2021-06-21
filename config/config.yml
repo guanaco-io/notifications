@@ -8,10 +8,13 @@ alerta:
 channel_settings:
   smtp:
     server: smtp.example.com
+    port: 465
     from: user@example.com
+    from_name: Test User
     user: username
     password: 'password'
     ssl: True
+    anonymous: False
 
   slack:
     webhook_url: 'https://hooks.slack.com/services/1/2/3'
