@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
 	"gopkg.in/gomail.v2"
 	"log"
@@ -40,7 +39,7 @@ func (channel MailChannel) Send(subject string, body string, dryrun bool) error 
 			}
 			return SendAnonymous(
 				fmt.Sprintf("%s:%d", channel.settings.Server, channel.settings.Port),
-				(&mail.Address{channel.settings.FromName, channel.settings.From}).String(),
+				(&mail.Address{Name: channel.settings.FromName, Address: channel.settings.From}).String(),
 				subject,
 				body,
 				to,
@@ -72,12 +71,20 @@ func SendAnonymous(addr, from, subject, body string, to []string) error {
 		return err
 	}
 
-	msg := "To: " + strings.Join(to, ",") + "\r\n" +
-		"From: " + from + "\r\n" +
-		"Subject: " + subject + "\r\n" +
-		"Content-Type: text/html; charset=\"UTF-8\"\r\n" +
-		"Content-Transfer-Encoding: base64\r\n" +
-		"\r\n" + base64.StdEncoding.EncodeToString([]byte(body))
+	header := make(map[string]string)
+	header["To"] = strings.Join(to, ",")
+	header["From"] = from
+	header["Subject"] = subject
+	header["Content-Type"] = `text/html; charset="UTF-8"`
+
+	msg := ""
+	for k, v := range header {
+		msg += fmt.Sprintf("%s: %s\r\n", k, v)
+	}
+	msg += "\r\n" + body
+
+	log.Println("Sending anonymous mail:")
+	log.Println(msg)
 
 	_, err = w.Write([]byte(msg))
 	if err != nil {
