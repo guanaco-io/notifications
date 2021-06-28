@@ -19,10 +19,10 @@ type RuleHandler struct {
 }
 
 func (handler *RuleHandler) handle(time time.Time) {
-
 	log.Printf("Evaluating rule %v (%v)", handler.ruleName, time)
+	openAlerts := handler.alerta.searchAlerts(handler.rule)
 
-	if openAlerts := handler.alerta.searchAlerts(handler.rule); openAlerts != nil && len(openAlerts) > 0 {
+	if openAlerts != nil && len(openAlerts) > 0 {
 
 		alreadyNotified, notNotified := Partition(openAlerts, handler.ruleName, IsNotified)
 
@@ -52,46 +52,46 @@ func (handler *RuleHandler) handle(time time.Time) {
 		}
 		log.Printf("%v alerts were already notified for rule %v", len(alreadyNotified), handler.ruleName)
 
-		if closedAlerts := handler.getClosedAlerts(openAlerts); closedAlerts != nil && len(closedAlerts) > 0 {
-
-			log.Printf("%v alerts were closed for rule %v", len(closedAlerts), handler.ruleName)
-
-			for _, ruleChannel := range handler.rule.Channels {
-				log.Printf("Sending %v closed alert(s) to channel %v of rule %v", len(closedAlerts), ruleChannel, handler.ruleName)
-
-				channel, ok := handler.channels[ruleChannel]
-				if !ok {
-					log.Fatalf("Unable to find channel '%v' of rule '%v' in channel config", ruleChannel, handler.ruleName)
-				}
-
-				sendError := channel.SendClosedAlerts(ClosedAlertsEvent{Alerts: closedAlerts}, handler.dryRun)
-				if sendError != nil {
-					log.Printf("Error sending closed alerts event to channel '%v' of rule '%v': %v", ruleChannel, handler.ruleName, sendError)
-				}
-			}
-		} else {
-			log.Printf("%v alerts were closed for rule %v", len(closedAlerts), handler.ruleName)
-		}
-
 		handler.openAlerts = openAlerts
 		log.Printf("tracking %v open alerts for rule %v", len(handler.openAlerts), handler.ruleName)
 
 	} else {
 		log.Printf("No Alerts found for rule %v", handler.ruleName)
 	}
+
+	if closedAlerts := handler.getClosedAlerts(openAlerts); closedAlerts != nil && len(closedAlerts) > 0 {
+
+		log.Printf("%v alerts were closed for rule %v", len(closedAlerts), handler.ruleName)
+
+		for _, ruleChannel := range handler.rule.Channels {
+			log.Printf("Sending %v closed alert(s) to channel %v of rule %v", len(closedAlerts), ruleChannel, handler.ruleName)
+
+			channel, ok := handler.channels[ruleChannel]
+			if !ok {
+				log.Fatalf("Unable to find channel '%v' of rule '%v' in channel config", ruleChannel, handler.ruleName)
+			}
+
+			sendError := channel.SendClosedAlerts(ClosedAlertsEvent{Alerts: closedAlerts}, handler.dryRun)
+			if sendError != nil {
+				log.Printf("Error sending closed alerts event to channel '%v' of rule '%v': %v", ruleChannel, handler.ruleName, sendError)
+			}
+		}
+	} else {
+		log.Printf("0 alerts were closed for rule %v", handler.ruleName)
+	}
 }
 
 func (handler *RuleHandler) getClosedAlerts(currentOpenAlerts []Alert) []Alert {
+	if currentOpenAlerts == nil || len(currentOpenAlerts) == 0 {
+		return handler.openAlerts
+	}
 
 	closedAlerts := make([]Alert, 0)
-
 	for _, previouslyOpenAlert := range handler.openAlerts {
-
 		if !Contains(previouslyOpenAlert, currentOpenAlerts) {
 			closedAlerts = append(closedAlerts, previouslyOpenAlert)
 		}
 	}
-
 	return closedAlerts
 }
 

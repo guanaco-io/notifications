@@ -201,19 +201,17 @@ func (event ClosedAlertsEvent) toWebhookMessage(slackChannel SlackChannel) slack
 }
 
 func (event OpenAlertsEvent) Subject() string {
-
 	if event.NewAlertCount > 1 {
 		return fmt.Sprintf("%v new alerts", event.NewAlertCount)
 	}
-	return fmt.Sprintf("%v new alert: %s", event.NewAlertCount, event.NewAlerts[0].Resource)
+	return fmt.Sprintf("New alert: %s", event.NewAlerts[0].Resource)
 }
 
 func (event ClosedAlertsEvent) Subject() string {
-
 	if len(event.Alerts) > 1 {
 		return fmt.Sprintf("%v alerts were closed", len(event.Alerts))
 	}
-	return fmt.Sprintf("Alert %v was closed", event.Alerts[0].Resource)
+	return fmt.Sprintf("Closed alert: %v", event.Alerts[0].Resource)
 }
 
 func getOrElse(attempt string, fallback string) string {
