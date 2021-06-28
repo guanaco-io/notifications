@@ -51,16 +51,11 @@ func (handler *RuleHandler) handle(time time.Time) {
 			}
 		}
 		log.Printf("%v alerts were already notified for rule %v", len(alreadyNotified), handler.ruleName)
-
-		handler.openAlerts = openAlerts
-		log.Printf("tracking %v open alerts for rule %v", len(handler.openAlerts), handler.ruleName)
-
 	} else {
 		log.Printf("No Alerts found for rule %v", handler.ruleName)
 	}
 
 	if closedAlerts := handler.getClosedAlerts(openAlerts); closedAlerts != nil && len(closedAlerts) > 0 {
-
 		log.Printf("%v alerts were closed for rule %v", len(closedAlerts), handler.ruleName)
 
 		for _, ruleChannel := range handler.rule.Channels {
@@ -79,6 +74,9 @@ func (handler *RuleHandler) handle(time time.Time) {
 	} else {
 		log.Printf("0 alerts were closed for rule %v", handler.ruleName)
 	}
+
+	handler.openAlerts = openAlerts
+	log.Printf("tracking %v open alerts for rule %v", len(handler.openAlerts), handler.ruleName)
 }
 
 func (handler *RuleHandler) getClosedAlerts(currentOpenAlerts []Alert) []Alert {
