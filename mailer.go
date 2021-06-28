@@ -83,9 +83,6 @@ func SendAnonymous(addr, from, subject, body string, to []string) error {
 	}
 	msg += "\r\n" + body
 
-	log.Println("Sending anonymous mail:")
-	log.Println(msg)
-
 	_, err = w.Write([]byte(msg))
 	if err != nil {
 		return err
