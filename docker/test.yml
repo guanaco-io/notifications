@@ -3,6 +3,7 @@ dry_run: true
 alerta:
   endpoint: http://host.docker.internal:8283/api
   webui: http://localhost:8283
+  apiToken: ''
   reload_interval: 30
 
 channel_settings:

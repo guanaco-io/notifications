@@ -3,6 +3,7 @@ dry_run: true
 alerta:
   endpoint: http://localhost:8283/api
   webui: http://localhost:8283
+  apiToken: ''
   reload_interval: 60
 
 channel_settings:

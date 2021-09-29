@@ -66,7 +66,7 @@ func (client *AlertaClient) searchAlerts(rule Rule) []Alert {
 	var alertsResponse = AlertsResponse{}
 
 	url := fmt.Sprintf("%v/alerts?%v", client.config.Endpoint, rule.Filter)
-	resp, err := performRequest("GET", url, nil)
+	resp, err := client.performRequest("GET", url, nil)
 
 	if err != nil {
 		log.Printf("Error fetching alerts: %v", err)
@@ -115,7 +115,7 @@ func (client *AlertaClient) updateAttributes(alert Alert, dryrun bool) error {
 	} else {
 		log.Printf("Posting attribute update to Alerta")
 
-		response, err := performRequest("PUT", url, jsn)
+		response, err := client.performRequest("PUT", url, jsn)
 		if err == nil {
 			log.Printf("< %v", response.Status)
 		}
@@ -123,7 +123,7 @@ func (client *AlertaClient) updateAttributes(alert Alert, dryrun bool) error {
 	}
 }
 
-func performRequest(method string, url string, body []byte) (resp *http.Response, err error) {
+func (alerta *AlertaClient) performRequest(method string, url string, body []byte) (resp *http.Response, err error) {
 	log.Printf("> [%s] %s", method, url)
 	if body != nil {
 		log.Printf("> %s", body)
@@ -139,6 +139,9 @@ func performRequest(method string, url string, body []byte) (resp *http.Response
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if alerta.config.ApiToken != "" {
+		req.Header.Set("X-API-Key", alerta.config.ApiToken)
+	}
 	client := &http.Client{}
 	return client.Do(req)
 }

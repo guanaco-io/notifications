@@ -18,6 +18,7 @@ type Config struct {
 type Alerta struct {
 	Endpoint       string        `yaml:"endpoint"`
 	Webui          string        `yaml:"webui"`
+	ApiToken       string        `yaml:"apiToken"`
 	ReloadInterval time.Duration `yaml:"reload_interval"`
 }
 

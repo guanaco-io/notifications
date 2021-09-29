@@ -12,6 +12,17 @@ go build
 ./notifications config/config.yml
 ```
 
+## Release
+Find the latest tag:
+```shell
+git fetch --tags
+git describe --tags $(git rev-list --tags --max-count=1)
+```
+Create a new tag and publish docker image to Github packages
+```shell
+./release.sh <release version> <github_username> <github_packages_token>
+```
+
 ## Docker
 
 ### Build an image
