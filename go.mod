@@ -1,10 +1,14 @@
 module github.com/guanaco-io/notifications
 
-go 1.16
+go 1.25
 
 require (
-	github.com/slack-go/slack v0.9.1
-	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
+	github.com/slack-go/slack v0.23.1
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v2 v2.4.0
+)
+
+require (
+	github.com/gorilla/websocket v1.5.3 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 )
